@@ -1,26 +1,32 @@
 import * as vscode from 'vscode';
 import { ProblemTreeProvider } from './ProblemTreeProvider';
 import { Problem } from './Problem';
+import { openProblem } from './commandExecutors';
 
 export function activate(context: vscode.ExtensionContext) {
 
 	console.log('Congratulations, your extension "vscode-cses" is now active!');
 
-	const disposable1 = vscode.commands.registerCommand('vscode-cses.openproblem', () => {
+	const cmd1 = vscode.commands.registerCommand('vscode-cses.openproblem', () => {
 		vscode.window.showInputBox({
-			prompt: "type id",
-		}).then((ans) => 
-			vscode.window.showInformationMessage(`Open problem ${ans}!`)
-		);
+			prompt: "Problem ID",
+			validateInput: (id) => {
+				const res: number = parseInt(id);
+				return isNaN(res) ? "Please enter a valid number" : null;
+			}
+		}).then(id => {
+			if (id !== undefined) {
+				openProblem(parseInt(id));
+			}
+		});
 	});
 
-	context.subscriptions.push(disposable1);
-
-	const disposable = vscode.commands.registerCommand('problems-explorer.openproblem', (problemId) => {
-		vscode.window.showInformationMessage(`Open problem ${problemId}!`);
+	const cmd2 = vscode.commands.registerCommand('problems-explorer.openproblem', (problemId) => {
+		openProblem(problemId);
 	});
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(cmd1);
+	context.subscriptions.push(cmd2);
 
 	const problems: Problem[] = [new Problem("hello", 1234, vscode.TreeItemCollapsibleState.Collapsed, {
 		command: 'problems-explorer.openproblem',
