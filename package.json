@@ -1,10 +1,24 @@
 {
   "name": "vscode-cses",
-  "displayName": "vscode-cses",
+  "displayName": "VSCode CSES",
   "description": "Visual Studio Code extension to solve CSES problem set right in the editor",
   "version": "0.0.1",
+  "license": "MIT",
+  "author": {
+    "name": "Vedant Wankhade",
+    "email": "vedantwankhade17@gmail.com"
+  },
+  "homepage": "https://github.com/VedantWankhade/vscode-cses/blob/master/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VedantWankhade/vscode-cses.git"
+  },
+  "bugs": {
+    "url": "https://github.com/VedantWankhade/vscode-cses/issues",
+    "email": "vedantwankhade17@gmail.com"
+  },
   "engines": {
-    "vscode": "^1.95.0"
+    "vscode": "^1.94.0"
   },
   "categories": [
     "Other"
