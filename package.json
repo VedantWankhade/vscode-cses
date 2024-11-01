@@ -23,13 +23,28 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": ["onView:cses"],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [{
+        "id": "cses",
+        "title": "CSES Problem Set",
+        "icon": "resources/activity-icon.svg"
+      }]
+    },
+    "views": {
+      "cses": [
+        {
+          "id": "problems-explorer",
+          "name": "Problems Explorer"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "vscode-cses.helloWorld",
-        "title": "Hello World"
+        "command": "vscode-cses.openproblem",
+        "title": "Open Problem"
       }
     ]
   },
