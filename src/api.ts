@@ -45,3 +45,28 @@ const getProblem = (id: number) => {
 export {
     getProblem
 };
+
+const submitProblem = (id: number, code: string, cookie: string, csrf: string, filename: string, lang: string) => {
+    const headers = new Headers();
+    headers.append("Cookie", cookie);
+    headers.append("Content-Type", "multipart/form-data; boundary=---------------------------105128400631089985942818395571");
+    headers.append("Host", "cses.fi");
+    headers.append("Origin", "https://cses.fi");
+    headers.append("Referer", `https://cses.fi/problemset/submit/${id}/`);
+    headers.append("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/jxl,image/webp,image/png,image/svg+xml,*/*;q=0.8");
+    
+    const raw = `-----------------------------105128400631089985942818395571\nContent-Disposition: form-data; name="csrf_token"\n\n${csrf}\n-----------------------------105128400631089985942818395571\nContent-Disposition: form-data; name="task"\n\n${id}\n-----------------------------105128400631089985942818395571\nContent-Disposition: form-data; name="file"; filename="${filename}"\nContent-Type: text/x-${lang.toLowerCase()}\n\n${code}\n\n-----------------------------105128400631089985942818395571\nContent-Disposition: form-data; name="lang"\n\n${lang}\n-----------------------------105128400631089985942818395571\nContent-Disposition: form-data; name="type"\n\ncourse\n-----------------------------105128400631089985942818395571\nContent-Disposition: form-data; name="target"\n\nproblemset\n-----------------------------105128400631089985942818395571--\n`;
+    
+    const options: RequestInit = {
+      method: "POST",
+      headers: headers,
+      body: raw,
+      redirect: "manual"
+    };
+
+    console.log('submitting');    
+    // fetch("https://cses.fi/course/send.php", options)
+    //   .then((response) => response.text())
+    //   .then((result) => console.log(result))
+    //   .catch((error) => console.error(error));
+};

@@ -8,6 +8,7 @@
     "name": "Vedant Wankhade",
     "email": "vedantwankhade17@gmail.com"
   },
+  "publisher": "vedantwankhade",
   "homepage": "https://github.com/VedantWankhade/vscode-cses/blob/master/README.md",
   "repository": {
     "type": "git",
@@ -28,6 +29,19 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "VSCode CSES",
+      "properties": {
+        "vscode-cses.cookie": {
+          "type": "string",
+          "description": "CSES website cookie"
+        },
+        "vscode-cses.csrf": {
+          "type": "string",
+          "description": "CSES website csrf token"
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {

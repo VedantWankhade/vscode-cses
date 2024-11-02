@@ -2,8 +2,16 @@ import * as vscode from 'vscode';
 import { ProblemTreeProvider } from './ProblemTreeProvider';
 import { Problem } from './Problem';
 import { openProblem } from './commandExecutors';
+import { getConfigValue } from './utils';
 
 export function activate(context: vscode.ExtensionContext) {
+
+	// get config
+	const config = {
+		cookie: getConfigValue('cookie'),
+		csrf: getConfigValue('csrf')
+	};
+	console.log(config);
 
 	console.log('Congratulations, your extension "vscode-cses" is now active!');
 
