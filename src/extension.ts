@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { ProblemTreeProvider } from './ProblemTreeProvider';
 import { Problem } from './Problem';
-import { openProblem } from './commandExecutors';
+import { openProblem, submitProblem } from './commandExecutors';
 import { getConfigValue } from './utils';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -29,8 +29,22 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	});
 
-	const cmd2 = vscode.commands.registerCommand('problems-explorer.openproblem', (problemId) => {
+	const cmd2 = vscode.commands.registerCommand('problems-explorer.openproblem', problemId => {
 		openProblem(problemId);
+	});
+
+	const cmd3 = vscode.commands.registerCommand('vscode-cses.submitproblem', () => {
+		vscode.window.showInputBox({
+			prompt: "Problem ID",
+			validateInput: (id) => {
+				const res: number = parseInt(id);
+				return isNaN(res) ? "Please enter a valid number" : null;
+			}
+		}).then(id => {
+			if (id !== undefined) {
+				submitProblem(config, parseInt(id));
+			}
+		});
 	});
 
 	context.subscriptions.push(cmd1);

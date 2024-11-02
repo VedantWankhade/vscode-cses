@@ -63,6 +63,10 @@
       {
         "command": "vscode-cses.openproblem",
         "title": "Open Problem"
+      },
+      {
+        "command": "vscode-cses.submitproblem",
+        "title": "Submit Problem"
       }
     ]
   },

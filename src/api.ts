@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { HTMLElement, parse } from 'node-html-parser';
 
+// TODO))
+// move to ./utils.ts
 const openProblemInTab = async (html: HTMLElement) => {
     const name = html.querySelector('title')?.text;
     const id = html.querySelector('input[name=task]')?.getAttribute('value');
@@ -42,10 +44,6 @@ const getProblem = (id: number) => {
     .catch((error) => vscode.window.showErrorMessage(error));
 };
 
-export {
-    getProblem
-};
-
 const submitProblem = (id: number, code: string, cookie: string, csrf: string, filename: string, lang: string) => {
     const headers = new Headers();
     headers.append("Cookie", cookie);
@@ -65,8 +63,17 @@ const submitProblem = (id: number, code: string, cookie: string, csrf: string, f
     };
 
     console.log('submitting');    
+
+    // TODO))
+    // submit problem
+    // start polling for result
+
     // fetch("https://cses.fi/course/send.php", options)
     //   .then((response) => response.text())
     //   .then((result) => console.log(result))
     //   .catch((error) => console.error(error));
+};
+
+export {
+    getProblem, submitProblem
 };
