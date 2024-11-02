@@ -1,14 +1,25 @@
 import * as vscode from 'vscode';
 import { HTMLElement, parse } from 'node-html-parser';
 
-import { Problem } from "./Problem";
-
-const openProblemInTab = (html: HTMLElement) => {
+const openProblemInTab = async (html: HTMLElement) => {
     const name = html.querySelector('title')?.text;
     const id = html.querySelector('input[name=task]')?.getAttribute('value');
     if (name === undefined || id === undefined) {throw Error("Some error occurred");}
     const problemView : vscode.WebviewPanel = vscode.window.createWebviewPanel('problem', name + id, vscode.ViewColumn.Active);
     problemView.webview.html = html.toString();
+    const probDoc = await vscode.workspace.openTextDocument({
+        content: `/**\nProblem Name: ${name}\nProblem ID: ${id}\n*/`,
+        language: 'java'
+    });
+    console.log(probDoc.uri, probDoc.fileName);
+    probDoc.save().then((saved: boolean) => {
+        console.log("saved: " + saved);
+    });
+    vscode.workspace.onDidSaveTextDocument(doc => {
+        vscode.window.showTextDocument(doc, {
+           viewColumn: vscode.ViewColumn.Beside 
+        });
+    });
 };
 
 const getProblem = (id: number) => {
