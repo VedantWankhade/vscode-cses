@@ -3,6 +3,7 @@ import { ProblemTreeProvider } from './ProblemTreeProvider';
 import { Problem } from './Problem';
 import { openProblem, submitProblem } from './commandExecutors';
 import { getConfigValue } from './utils';
+import * as api from './api';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -51,14 +52,12 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(cmd2);
 	context.subscriptions.push(cmd3);
 
-	const problems: Problem[] = [new Problem("hello", 1234, vscode.TreeItemCollapsibleState.Collapsed, {
-		command: 'problems-explorer.openproblem',
-		title: '',
-		arguments: [1234]
-	})];
+	api.getProblemsList().then(problems => {
+		console.log(problems);
 
-	const problemTreeProvider: ProblemTreeProvider = new ProblemTreeProvider(problems);
-	vscode.window.registerTreeDataProvider('problems-explorer', problemTreeProvider);
+		const problemTreeProvider: ProblemTreeProvider = new ProblemTreeProvider(problems);
+		vscode.window.registerTreeDataProvider('problems-explorer', problemTreeProvider);
+	}).catch(err => console.log("ERRR: ", err));
 }
 
 export function deactivate() {}

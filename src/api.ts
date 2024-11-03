@@ -1,30 +1,7 @@
 import * as vscode from 'vscode';
-import { HTMLElement, parse } from 'node-html-parser';
-
-// TODO))
-// move to ./utils.ts
-const openProblemInTab = async (html: HTMLElement) => {
-    const name = html.querySelector('title')?.text;
-    const id = html.querySelector('input[name=task]')?.getAttribute('value');
-    if (name === undefined || id === undefined) {throw Error("Some error occurred");}
-    const problemView : vscode.WebviewPanel = vscode.window.createWebviewPanel('problem', name + id, vscode.ViewColumn.Active);
-    problemView.webview.html = html.toString();
-    const probDoc = await vscode.workspace.openTextDocument({
-        content: `/**\nProblem Name: ${name}\nProblem ID: ${id}\n*/`,
-        // TODO))
-        // create config for preferred language
-        language: 'java'
-    });
-    console.log(probDoc.uri, probDoc.fileName);
-    probDoc.save().then((saved: boolean) => {
-        console.log("saved: " + saved);
-    });
-    vscode.workspace.onDidSaveTextDocument(doc => {
-        vscode.window.showTextDocument(doc, {
-           viewColumn: vscode.ViewColumn.Beside 
-        });
-    });
-};
+import { parse } from 'node-html-parser';
+import { openProblemInTab } from './utils';
+import { Problem } from './Problem';
 
 const getProblem = (id: number) => {
 
@@ -125,6 +102,39 @@ const submitProblem = (id: number, code: string, cookie: string, csrf: string, f
       });
 };
 
+const getProblemsList = async (): Promise<Problem[]> => {
+    return new Promise((resolve, reject) => {
+        fetch("https://cses.fi/problemset/")
+        .then((response) => response.text())
+        .then((result) => {
+            console.log(result);
+            const root = parse(result);
+            const problemList = root.querySelectorAll('a[href^="/problemset/task/"]');
+            console.log(problemList.length);
+            console.log(problemList[0].text, problemList[0].rawAttributes.href);
+        
+            const problems: Problem[] = [];
+            
+            for (let i = 0; i < problemList.length; i++) {
+                console.log(problemList[i].text);
+                const id = parseInt(problemList[i].rawAttributes.href.split('/')[3]);
+                problems.push(new Problem(problemList[i].text, id, vscode.TreeItemCollapsibleState.Collapsed, {
+                    command: 'problems-explorer.openproblem',
+                    title: '',
+                    arguments: [id]
+                }));
+            }
+            resolve(problems);
+        })
+        .catch(err => {
+            console.log(err);
+            vscode.window.showErrorMessage("Error fetching problem set " + err);
+            reject("errror");
+        });
+    });
+    
+};
+
 export {
-    getProblem, submitProblem
+    getProblem, submitProblem, getProblemsList
 };
