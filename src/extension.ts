@@ -49,6 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(cmd1);
 	context.subscriptions.push(cmd2);
+	context.subscriptions.push(cmd3);
 
 	const problems: Problem[] = [new Problem("hello", 1234, vscode.TreeItemCollapsibleState.Collapsed, {
 		command: 'problems-explorer.openproblem',

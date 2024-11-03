@@ -11,6 +11,8 @@ const openProblemInTab = async (html: HTMLElement) => {
     problemView.webview.html = html.toString();
     const probDoc = await vscode.workspace.openTextDocument({
         content: `/**\nProblem Name: ${name}\nProblem ID: ${id}\n*/`,
+        // TODO))
+        // create config for preferred language
         language: 'java'
     });
     console.log(probDoc.uri, probDoc.fileName);
@@ -68,10 +70,55 @@ const submitProblem = (id: number, code: string, cookie: string, csrf: string, f
     // submit problem
     // start polling for result
 
-    // fetch("https://cses.fi/course/send.php", options)
-    //   .then((response) => response.text())
-    //   .then((result) => console.log(result))
-    //   .catch((error) => console.error(error));
+    fetch("https://cses.fi/course/send.php", options)
+      .then((response) => response.headers.get('Location'))
+      .then(async (result) => {
+        if (result === null || result === undefined || result === '') {
+            vscode.window.showErrorMessage("Failed to get results");
+            return;
+        }
+        let status = 'PENDING';
+        const jobid = result.split('/')[3];
+        console.log(jobid);
+        headers.delete('Content-Type');
+        headers.set('Accept', '*/*');
+        const formdata = new FormData();
+        formdata.append("csrf_token", csrf);
+        while (status === 'PENDING' || status.includes('TESTING')) {
+            console.log(status);
+            await fetch(`https://cses.fi/ajax/get_status.php?entry=${jobid}`, {
+                method: "GET",
+                headers,
+                // body: formdata,
+                redirect: 'manual'
+            })
+            .then(async res => {
+                status = await res.text();
+                console.log(status);
+            }).catch(err => {console.log(err); status = 'ERROR';});
+        }
+        if (status === 'ERROR') {
+            vscode.window.showErrorMessage("Failed to get results");
+            return;
+        }
+    
+        fetch(`https://cses.fi/problemset/result/${jobid}/`, {
+            method: 'GET',
+            headers,
+            redirect: 'manual'
+        })
+        .then((response) => response.text())
+        .then((result) => {
+            console.log(result); 
+            const resultWebView = vscode.window.createWebviewPanel('result', 'result ' + id, vscode.ViewColumn.Beside);
+            resultWebView.webview.html = result;
+        })
+        .catch((error) => console.error(error));
+      })
+      .catch((error) => {
+            vscode.window.showErrorMessage("Failed to submit " + error);
+            return;
+      });
 };
 
 export {
