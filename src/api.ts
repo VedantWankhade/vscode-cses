@@ -84,6 +84,10 @@ const submitProblem = (id: number, code: string, cookie: string, csrf: string, f
         headers.set('Accept', '*/*');
         const formdata = new FormData();
         formdata.append("csrf_token", csrf);
+
+        // TODO))
+        // do this using vscode.window.withProgress
+        // but it requires asunc call
         while (status === 'PENDING' || status.includes('TESTING')) {
             console.log(status);
             await fetch(`https://cses.fi/ajax/get_status.php?entry=${jobid}`, {
