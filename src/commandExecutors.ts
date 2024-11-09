@@ -6,7 +6,7 @@ const openProblem = (id: number) => {
     api.getProblem(id);
 };
 
-const submitProblem =(config: {cookie: string | undefined, csrf: string | undefined}, id: number) => {
+const submitProblem = async (config: {cookie: string | undefined, csrf: string | undefined}, id: number) => {
     if (config.cookie === undefined) {
         vscode.window.showErrorMessage("Please set cookie value in extension setting");
     }
@@ -30,11 +30,9 @@ const submitProblem =(config: {cookie: string | undefined, csrf: string | undefi
     const filePath = textEditor.document.fileName;
     const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
 
-    api.submitProblem(id, code, config.cookie, config.csrf, fileName, lang);
-
-    // TODO))
-    // collect all properties - id, filename, code (text document)
-    // call submit problem api
+    api.submitProblem(id, code, config.cookie, config.csrf, fileName, lang)
+    .then(e => console.log(e))
+    .catch(e => console.log(e));
 };
 
 export {

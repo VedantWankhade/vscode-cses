@@ -23,7 +23,7 @@ const getProblem = (id: number) => {
     .catch((error) => vscode.window.showErrorMessage(error));
 };
 
-const submitProblem = (id: number, code: string, cookie: string, csrf: string, filename: string, lang: string) => {
+const submitProblem = async (id: number, code: string, cookie: string, csrf: string, filename: string, lang: string) => {
     const headers = new Headers();
     headers.append("Cookie", cookie);
     headers.append("Content-Type", "multipart/form-data; boundary=---------------------------105128400631089985942818395571");
@@ -43,11 +43,7 @@ const submitProblem = (id: number, code: string, cookie: string, csrf: string, f
 
     console.log('submitting');    
 
-    // TODO))
-    // submit problem
-    // start polling for result
-
-    fetch("https://cses.fi/course/send.php", options)
+    await fetch("https://cses.fi/course/send.php", options)
       .then((response) => response.headers.get('Location'))
       .then(async (result) => {
         if (result === null || result === undefined || result === '') {
@@ -62,39 +58,50 @@ const submitProblem = (id: number, code: string, cookie: string, csrf: string, f
         const formdata = new FormData();
         formdata.append("csrf_token", csrf);
 
-        // TODO))
-        // do this using vscode.window.withProgress
-        // but it requires asunc call
-        while (status === 'PENDING' || status.includes('TESTING')) {
-            console.log(status);
-            await fetch(`https://cses.fi/ajax/get_status.php?entry=${jobid}`, {
-                method: "GET",
-                headers,
-                // body: formdata,
-                redirect: 'manual'
-            })
-            .then(async res => {
-                status = await res.text();
-                console.log(status);
-            }).catch(err => {console.log(err); status = 'ERROR';});
-        }
-        if (status === 'ERROR') {
-            vscode.window.showErrorMessage("Failed to get results");
-            return;
-        }
-    
-        fetch(`https://cses.fi/problemset/result/${jobid}/`, {
-            method: 'GET',
-            headers,
-            redirect: 'manual'
-        })
-        .then((response) => response.text())
-        .then((result) => {
-            console.log(result); 
-            const resultWebView = vscode.window.createWebviewPanel('result', 'result ' + id, vscode.ViewColumn.Beside);
-            resultWebView.webview.html = result;
-        })
-        .catch((error) => console.error(error));
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+			title: "Submitting",
+			cancellable: false
+        }, async progress => {
+                while (status === 'PENDING' || status.includes('TESTING')) {
+                    
+                    if (status.includes('TESTING')) {
+                        const comp = status.split(" ")[1];
+                        let perc = "";
+                        for (let i = 0; i < comp.length - 1; i++) {perc += comp[i]; }
+                        progress.report({ increment: parseInt(perc) });
+                    }
+                        console.log(status);
+                    await fetch(`https://cses.fi/ajax/get_status.php?entry=${jobid}`, {
+                        method: "GET",
+                        headers,
+                        // body: formdata,
+                        redirect: 'manual'
+                    })
+                    .then(async res => {
+                        status = await res.text();
+                        console.log(status);
+                    }).catch(err => {console.log(err); status = 'ERROR';});
+                }
+                if (status === 'ERROR') {
+                    vscode.window.showErrorMessage("Failed to get results");
+                    // reject();
+                    return;
+                }
+            
+                fetch(`https://cses.fi/problemset/result/${jobid}/`, {
+                    method: 'GET',
+                    headers,
+                    redirect: 'manual'
+                })
+                .then((response) => response.text())
+                .then((result) => {
+                    console.log(result); 
+                    const resultWebView = vscode.window.createWebviewPanel('result', 'result ' + id, vscode.ViewColumn.Beside);
+                    resultWebView.webview.html = result;
+                })
+                .catch((error) => console.error(error));
+        });
       })
       .catch((error) => {
             vscode.window.showErrorMessage("Failed to submit " + error);
@@ -132,7 +139,6 @@ const getProblemsList = async (): Promise<Problem[]> => {
             reject("errror");
         });
     });
-    
 };
 
 export {
