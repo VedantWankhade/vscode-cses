@@ -29,6 +29,12 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsWelcome": [
+      {
+        "view": "problems-explorer",
+        "contents": "Login to cses.fi using credentials.\n[Login](command:vscode-cses.login)"
+      }
+    ],
     "configuration": {
       "title": "VSCode CSES",
       "properties": {
@@ -67,6 +73,10 @@
       {
         "command": "vscode-cses.submitproblem",
         "title": "Submit Problem"
+      },
+      {
+        "command": "vscode-cses.login",
+        "title": "Login"
       }
     ]
   },

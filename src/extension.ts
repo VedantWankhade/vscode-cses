@@ -48,16 +48,34 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	});
 
+	const cmd4 = vscode.commands.registerCommand('vscode-cses.login', () => {
+		// TODO)) implement login
+		// ask creds
+		// get csrf from website berfore login
+		// send login request
+		// save csrf and cookie to config
+		vscode.window.showInformationMessage("STUB LOGIN");
+		api.getProblemsList().then((problems: Problem[]) => {
+			console.log(problems);
+
+			refreshView(problems);
+		}).catch(err => console.log("ERRR: ", err));
+	});
+
 	context.subscriptions.push(cmd1);
 	context.subscriptions.push(cmd2);
 	context.subscriptions.push(cmd3);
+	context.subscriptions.push(cmd4);
 
-	api.getProblemsList().then((problems: Problem[]) => {
-		console.log(problems);
+	if (config.cookie !== undefined && config.cookie !== '' && config.csrf !== undefined && config.csrf !== '')	{
+		api.getProblemsList().then((problems: Problem[]) => {
+			console.log(problems);
 
-		const problemTreeProvider: ProblemTreeProvider = new ProblemTreeProvider(problems);
-		vscode.window.registerTreeDataProvider('problems-explorer', problemTreeProvider);
-	}).catch(err => console.log("ERRR: ", err));
+			refreshView(problems);
+		}).catch(err => console.log("ERRR: ", err));
+	} else {
+		refreshView([]);
+	}
 
 	// TODO))
     // needs better implementation
@@ -68,5 +86,10 @@ export function activate(context: vscode.ExtensionContext) {
         });
     });
 }
+
+const refreshView = (problems: Problem[]) => {
+	const problemTreeProvider: ProblemTreeProvider = new ProblemTreeProvider(problems);
+	vscode.window.registerTreeDataProvider('problems-explorer', problemTreeProvider);
+};
 
 export function deactivate() {}
