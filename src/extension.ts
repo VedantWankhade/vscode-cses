@@ -52,12 +52,21 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(cmd2);
 	context.subscriptions.push(cmd3);
 
-	api.getProblemsList().then(problems => {
+	api.getProblemsList().then((problems: Problem[]) => {
 		console.log(problems);
 
 		const problemTreeProvider: ProblemTreeProvider = new ProblemTreeProvider(problems);
 		vscode.window.registerTreeDataProvider('problems-explorer', problemTreeProvider);
 	}).catch(err => console.log("ERRR: ", err));
+
+	// TODO))
+    // needs better implementation
+	// restrict to cses activity view
+    vscode.workspace.onDidSaveTextDocument(doc => {
+        vscode.window.showTextDocument(doc, {
+           viewColumn: vscode.ViewColumn.Beside 
+        });
+    });
 }
 
 export function deactivate() {}

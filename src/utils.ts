@@ -30,16 +30,6 @@ const openProblemInTab = async (html: HTMLElement) => {
     probDoc.save().then((saved: boolean) => {
         console.log("saved: " + saved);
     });
-    
-    // TODO))
-    // this is hooking this action on save everytime this function is called
-    // hence its opening multiple editors
-    // implement this in a different way
-    vscode.workspace.onDidSaveTextDocument(doc => {
-        vscode.window.showTextDocument(doc, {
-           viewColumn: vscode.ViewColumn.Beside 
-        });
-    });
 };
 
 export {
