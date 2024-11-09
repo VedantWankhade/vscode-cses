@@ -7,13 +7,6 @@ import * as api from './api';
 
 export function activate(context: vscode.ExtensionContext) {
 
-	// get config
-	const config = {
-		cookie: getConfigValue('cookie'),
-		csrf: getConfigValue('csrf')
-	};
-	console.log(config);
-
 	console.log('Congratulations, your extension "vscode-cses" is now active!');
 
 	const cmd1 = vscode.commands.registerCommand('vscode-cses.openproblem', () => {
@@ -43,6 +36,12 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}).then(id => {
 			if (id !== undefined) {
+				// get config
+				const config = {
+					cookie: getConfigValue('cookie'),
+					csrf: getConfigValue('csrf')
+				};
+				console.log(config);
 				submitProblem(config, parseInt(id));
 			}
 		});
@@ -54,12 +53,20 @@ export function activate(context: vscode.ExtensionContext) {
 		// get csrf from website berfore login
 		// send login request
 		// save csrf and cookie to config
-		vscode.window.showInformationMessage("STUB LOGIN");
-		api.getProblemsList().then((problems: Problem[]) => {
-			console.log(problems);
-
-			refreshView(problems);
-		}).catch(err => console.log("ERRR: ", err));
+		vscode.window.showInputBox()
+		.then(user => {
+			vscode.window.showInputBox()
+			.then(async pass => {
+				const [cookie, csrf] = await api.getSession();
+				await api.login(cookie, csrf, user === undefined ? '' : user, pass === undefined ? '' : pass);
+				api.getProblemsList().then((problems: Problem[]) => {
+					console.log(problems);
+		
+					refreshView(problems);
+				}).catch(err => console.log("ERRR: ", err));
+			});
+		});
+		
 	});
 
 	context.subscriptions.push(cmd1);
@@ -67,6 +74,10 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(cmd3);
 	context.subscriptions.push(cmd4);
 
+	const config = {
+		cookie: getConfigValue('cookie'),
+		csrf: getConfigValue('csrf')
+	};
 	if (config.cookie !== undefined && config.cookie !== '' && config.csrf !== undefined && config.csrf !== '')	{
 		api.getProblemsList().then((problems: Problem[]) => {
 			console.log(problems);

@@ -114,16 +114,16 @@ const getProblemsList = async (): Promise<Problem[]> => {
         fetch("https://cses.fi/problemset/")
         .then((response) => response.text())
         .then((result) => {
-            console.log(result);
+            // console.log(result);
             const root = parse(result);
             const problemList = root.querySelectorAll('a[href^="/problemset/task/"]');
             console.log(problemList.length);
-            console.log(problemList[0].text, problemList[0].rawAttributes.href);
+            // console.log(problemList[0].text, problemList[0].rawAttributes.href);
         
             const problems: Problem[] = [];
             
             for (let i = 0; i < problemList.length; i++) {
-                console.log(problemList[i].text);
+                // console.log(problemList[i].text);
                 const id = parseInt(problemList[i].rawAttributes.href.split('/')[3]);
                 problems.push(new Problem(problemList[i].text, id, vscode.TreeItemCollapsibleState.Collapsed, {
                     command: 'problems-explorer.openproblem',
@@ -141,6 +141,70 @@ const getProblemsList = async (): Promise<Problem[]> => {
     });
 };
 
+const getSession = async (): Promise<string[]> => {
+    return new Promise(async (resolve, reject) => {
+        console.log("getting session");
+        await fetch('https://cses.fi/login')
+        .then(async res => {
+            const cookie = res.headers.getSetCookie()[0];
+            const cookieValue = cookie.slice(0, cookie.indexOf(';'));
+            console.log(cookie, cookieValue);
+            const root = parse(await res.text());
+            const csrf = root.querySelector('input[name="csrf_token"]')?.rawAttributes.value;
+            console.log(csrf);
+            if (csrf === undefined || csrf === '' || cookieValue === undefined || cookieValue === '') {
+                throw new Error("csrf or cookie is invalid");
+            }
+            vscode.workspace.getConfiguration('vscode-cses').update('csrf', csrf, true);
+            vscode.workspace.getConfiguration('vscode-cses').update('cookie', cookieValue, true);
+            resolve([cookieValue, csrf]);
+        })
+        .catch(err => {
+            console.log("cannot get session", err);
+            vscode.window.showErrorMessage('Cannot get session', err);
+            reject([]);
+        });
+    });
+};
+
+const login = (cookie: string, csrf: string, user: string, pass: string) => {
+    console.log("chippin in");
+    const headers = new Headers();
+    if (cookie === undefined || cookie === '' || csrf === undefined || csrf === '') {
+        console.log('login error');
+        vscode.window.showErrorMessage('loginr error');
+        return;
+    }
+    headers.append("Cookie", cookie);
+    headers.append("Content-Type", "application/x-www-form-urlencoded");
+
+    const urlencoded = new URLSearchParams();
+    urlencoded.append("csrf_token", csrf);
+    urlencoded.append("nick", user);
+    urlencoded.append("pass", pass);
+
+    const options: RequestInit = {
+        method: "POST",
+        headers,
+        body: urlencoded,
+        redirect: "follow"
+    };
+
+    fetch("https://cses.fi/login", options)
+    .then(async res => {
+        const root = parse(await res.text());
+        const resUser = root.querySelector(`a[href^="/user/"]`)?.innerText;
+        console.log(resUser);
+        if (resUser !== undefined || resUser !== '') {
+            vscode.window.showInformationMessage("Logged in as " + resUser);
+        }
+        else {
+            vscode.window.showInformationMessage("Failed to log in");
+        }
+    })
+    .catch((error) => console.error(error));
+};
+
 export {
-    getProblem, submitProblem, getProblemsList
+    getProblem, submitProblem, getProblemsList, getSession, login
 };
